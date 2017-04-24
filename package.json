@@ -9,10 +9,11 @@
   "author": "Kevin Hurley",
   "license": "ISC",
   "dependencies": {
-    "github-api": "^3.0.0",
     "json2csv": "^3.7.3"
   },
   "devDependencies": {
-    "node-fetch": "^1.6.3"
+    "lodash": "^4.17.4",
+    "node-fetch": "^1.6.3",
+    "parse-link-header": "^0.4.1"
   }
 }

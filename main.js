@@ -1,12 +1,12 @@
-const Fetcher = require('./GitHubCommentFetcher');
+const Fetcher = require('./GitHubFetcher');
 
 const fetcher = new Fetcher();
 
-//const pullRequests = [array of PR numbers];
-
-// fetcher.getComments('BLC', 'nextcapital-design-objects', [584, 594, 603, 618, 630, 664])
-// .then((comments) => {
-//   fetcher.writeCSV(comments, 'hurleyk_comments.csv');
-// });
-
-fetcher.getPullRequestIdsByUser('hurleyk', 'BLC', 'nextcapital-design-objects');
+fetcher.getPullRequestIdsByUser(
+  'nc-hurleyk', 'BLC', 'nextcapital-ui'
+).then((ids) => {
+  fetcher.getComments('BLC', 'nextcapital-ui', ids)
+  .then((comments) => {
+    fetcher.writeCSV(comments, 'hurleyk_comments.csv');
+  });
+});
