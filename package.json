@@ -1,0 +1,18 @@
+{
+  "name": "git-hub-comment-fetcher",
+  "version": "1.0.0",
+  "description": "A utility for fetching review comments from GitHub and parsing them in useful ways",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kevin Hurley",
+  "license": "ISC",
+  "dependencies": {
+    "github-api": "^3.0.0",
+    "json2csv": "^3.7.3"
+  },
+  "devDependencies": {
+    "node-fetch": "^1.6.3"
+  }
+}
