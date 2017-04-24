@@ -4,6 +4,7 @@
   "description": "A utility for fetching review comments from GitHub and parsing them in useful ways",
   "main": "main.js",
   "scripts": {
+    "start": "node main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Kevin Hurley",

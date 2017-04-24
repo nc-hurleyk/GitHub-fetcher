@@ -1,34 +1,22 @@
 const json2csv = require('json2csv');
 const fs = require('fs');
-const fetch = require('node-fetch');
 const parseLinkHeader = require('parse-link-header');
 const _ = require('lodash');
+const { getLinkHeader, gitHubFetch } = require('./gitHubFetch');
 
 class GitHubFetcher {
-  constructor() {
-    this.baseUrl = `https://api.github.com/`;
-    this.token = process.env.GITHUB_AUTH_TOKEN;
-  }
-
   /*
     getComments - get all review comments in [pullNumbers] from a repo in
-    in the format [user]/[repo]
+    in the format [repoOwner]/[repo]
     e.g.: getComments('kphurley', 'myRepo', [42, 43]) should get all review comments
     in repo kphurley/myRepo in pull requests (issues) #42 and #43.
 
-    return a promise for a JSON array of the comments with user, issueNumber, body and url props
+    Return a promise for a JSON array of the comments with user, issueNumber, body and url props
   */
   getComments(repoOwner, repo, pullNumbers) {
     const numbers = (pullNumbers instanceof Array) ? pullNumbers : [pullNumbers];
-    const tokenString = `token ${this.token}`;
     const requests = numbers.map((number) => {
-      return fetch(`https://api.github.com/repos/${repoOwner}/${repo}/pulls/${number}/comments`, {
-        headers: {
-          Authorization: tokenString
-        }
-      }).then((res) => {
-        return res.json();
-      });
+      return gitHubFetch(`repos/${repoOwner}/${repo}/pulls/${number}/comments`);
     });
 
     return Promise.all(requests)
@@ -59,21 +47,16 @@ class GitHubFetcher {
     const tokenString = `token ${this.token}`;
     let linkHeader;
 
-    const doAllRequests = () => {
+    const doAllRequests = (pages) => {
       let requests = [];
-      let data = [];
-      let requestURL;
-      const pages = Number(linkHeader.last.page);
+
       for (let i = 1; i <= pages; i++) {
-        requestURL =
-          `https://api.github.com/repos/${repoOwner}/${repo}/pulls?state=all&per_page=100&page=${i}`;
         requests.push(
-          fetch(requestURL, { headers: { Authorization: tokenString }}).then((res) => {
-            return res.json();
-          }).then((res) => {
-            return res.filter(
-              (pr) => pr.user.login === user
-            ).map((pr) => pr.number);
+          gitHubFetch(
+            `repos/${repoOwner}/${repo}/pulls?state=all&per_page=100&page=${i}`
+          ).then((res) => {
+            return res.filter((pr) => pr.user.login === user)
+              .map((pr) => pr.number);
           })
         );
       }
@@ -81,15 +64,12 @@ class GitHubFetcher {
       return Promise.all(requests).then((results) => {
         return _.flatten(results);
       });
-    }
+    };
 
-    return fetch(`https://api.github.com/repos/BLC/nextcapital-ui/pulls?state=all&per_page=100`, {
-      headers: {
-        Authorization: tokenString
-      }
-    }).then((res) => {
-      linkHeader = parseLinkHeader(res.headers._headers.link[0]);
-      return doAllRequests();
+    return getLinkHeader(
+      `repos/BLC/nextcapital-ui/pulls?state=all&per_page=100`
+    ).then((linkHeader) => {
+      return doAllRequests(Number(linkHeader.last.page));
     }).catch((err) => {
       console.log(`${err} happened`);
     });
